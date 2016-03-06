@@ -36,7 +36,7 @@ AvgStepsByInterval[which.max(AvgStepsByInterval$avgSteps),]
 
 missing<-table(is.na(data$steps))[2]
 
-AvgStepsByInterval<- data_NoNa %>% group_by(interval) %>% summarize(avgSteps=mean(steps))
+AvgStepsByInterval<- data %>% group_by(interval) %>% summarize(avgSteps=mean(steps, na.rm=T))
 imputedDataset <- data 
 for (i in 1:nrow(imputedDataset)) {
   if (is.na(imputedDataset$steps[i])) {

@@ -34,7 +34,6 @@ str(data)
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 Search for missing values in the numeric column and filter out rows with missing data:
-#Filter out the missing data:
 
 ```r
 table(is.na(data$steps))
@@ -47,6 +46,7 @@ table(is.na(data$steps))
 ```
 
 ```r
+#Filter out the missing data:
 data_NoNa<-data[complete.cases(data),]
 nCompleteCases<-nrow(data_NoNa)
 ```
@@ -252,6 +252,56 @@ median(TotalStepsByDate$totalSteps)
 
 The median of the data set with imputed values is slightly bigger.
 
-
-
 ## Are there differences in activity patterns between weekdays and weekends?
+Define a function that will calculate is a date is a weekday or a weekend day.
+
+
+```r
+determineWeekdayFromWeekend<-function(aDate){
+  if( tolower(weekdays(aDate)) %in% c("monday", "tuesday", "wednesday","thursday","friday")) return("weekday")
+  if( tolower(weekdays(aDate)) %in% c("saturday", "sunday")) return("weekend")
+}
+```
+
+Create a new Factor varible in the filled data set that classifies a Date as weekday or weekend:
+
+```r
+imputedValuesDataset$dayType<-as.factor(sapply(imputedValuesDataset$date, determineWeekdayFromWeekend))
+```
+
+Calculate the average number of steps taken by 5-minute interval, grouped by weekday or weekend:
+
+```r
+fiveMinAvgStepsByWeekendOrWeekday<-imputedValuesDataset%>%group_by(dayType,interval)%>% summarize(avgSteps=mean(steps))
+str(fiveMinAvgStepsByWeekendOrWeekday)
+```
+
+```
+## Classes 'grouped_df', 'tbl_df', 'tbl' and 'data.frame':	576 obs. of  3 variables:
+##  $ dayType : Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ avgSteps: num  2.251 0.445 0.173 0.198 0.099 ...
+##  - attr(*, "vars")=List of 1
+##   ..$ : symbol dayType
+##  - attr(*, "drop")= logi TRUE
+```
+
+Plot the aggregation
+
+```r
+library(ggplot2)
+
+ggplot(fiveMinAvgStepsByWeekendOrWeekday, aes(interval, avgSteps))+
+    geom_line()+
+    facet_grid(dayType~.)+
+    ggtitle("5-Minute Interval Average Number of Steps, by Day type")+
+    ylab("Average 5-min Interval Steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-24-1.png)
+
+
+>Prepared by etsibert@hotmail.com, 03/06/2016
+
+
+
